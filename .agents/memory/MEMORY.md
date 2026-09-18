@@ -1,0 +1,1 @@
+- [Generated API client typings](api-contract-and-browser-types.md) — keep iterable DOM types enabled for Orval-generated fetch clients.

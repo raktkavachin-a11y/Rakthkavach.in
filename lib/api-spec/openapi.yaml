@@ -1,22 +1,30 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
+  # Keep this title stable: the generated package paths depend on it.
   title: Api
-  version: 0.1.0
-  description: API specification
+  version: 1.0.0
+  description: Rakt Kavach National Blood Grid API
 servers:
   - url: /api
-    description: Base API path
+    description: Shared API service
 tags:
   - name: health
-    description: Health operations
+  - name: dashboards
+  - name: donors
+  - name: inventory
+  - name: requests
+  - name: emergencies
+  - name: facilities
+  - name: verification
+  - name: intelligence
+  - name: audit
+  - name: integrations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
-      summary: Health check
-      description: Returns server health status
+      summary: Check API health
       responses:
         "200":
           description: Healthy
@@ -24,13 +32,788 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboards]
+      summary: Get a role-aware command center summary
+      parameters:
+        - $ref: "#/components/parameters/Role"
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /donors:
+    get:
+      operationId: listDonors
+      tags: [donors]
+      summary: Search the donor registry
+      parameters:
+        - $ref: "#/components/parameters/BloodGroup"
+        - name: city
+          in: query
+          schema: { type: string }
+        - name: eligible
+          in: query
+          schema: { type: boolean }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+      responses:
+        "200":
+          description: Donor registry results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DonorListResponse"
+    post:
+      operationId: createDonor
+      tags: [donors]
+      summary: Register a donor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DonorInput"
+      responses:
+        "201":
+          description: Donor created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donor"
+
+  /donors/{donorId}:
+    get:
+      operationId: getDonor
+      tags: [donors]
+      summary: Get a donor profile
+      parameters:
+        - $ref: "#/components/parameters/DonorId"
+      responses:
+        "200":
+          description: Donor profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donor"
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      operationId: updateDonor
+      tags: [donors]
+      summary: Update a donor profile
+      parameters:
+        - $ref: "#/components/parameters/DonorId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DonorUpdate"
+      responses:
+        "200":
+          description: Updated donor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donor"
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /donors/{donorId}/history:
+    get:
+      operationId: getDonorHistory
+      tags: [donors]
+      summary: Get a donor's donation history
+      parameters:
+        - $ref: "#/components/parameters/DonorId"
+      responses:
+        "200":
+          description: Donation history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DonationHistoryResponse"
+
+  /inventory:
+    get:
+      operationId: listBloodUnits
+      tags: [inventory]
+      summary: List live blood inventory
+      parameters:
+        - $ref: "#/components/parameters/BloodGroup"
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/InventoryStatus"
+        - name: facilityId
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 100 }
+      responses:
+        "200":
+          description: Blood units
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BloodUnitListResponse"
+    post:
+      operationId: createBloodUnit
+      tags: [inventory]
+      summary: Add a verified blood unit to inventory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BloodUnitInput"
+      responses:
+        "201":
+          description: Blood unit created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BloodUnit"
+
+  /inventory/{unitId}:
+    patch:
+      operationId: updateBloodUnit
+      tags: [inventory]
+      summary: Update a blood unit
+      parameters:
+        - $ref: "#/components/parameters/UnitId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BloodUnitUpdate"
+      responses:
+        "200":
+          description: Updated blood unit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BloodUnit"
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /inventory/timeline:
+    get:
+      operationId: getBloodUnitTimeline
+      tags: [inventory]
+      summary: Get recent inventory events
+      parameters:
+        - name: facilityId
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+      responses:
+        "200":
+          description: Inventory timeline
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BloodUnitTimelineResponse"
+
+  /blood-requests:
+    get:
+      operationId: listBloodRequests
+      tags: [requests]
+      summary: List active blood requests
+      parameters:
+        - $ref: "#/components/parameters/BloodGroup"
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/RequestStatus"
+        - name: facilityId
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Blood requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BloodRequestListResponse"
+    post:
+      operationId: createBloodRequest
+      tags: [requests]
+      summary: Create a blood request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BloodRequestInput"
+      responses:
+        "201":
+          description: Blood request created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BloodRequest"
+
+  /blood-requests/{requestId}/status:
+    patch:
+      operationId: updateBloodRequestStatus
+      tags: [requests]
+      summary: Update blood request status
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BloodRequestUpdateStatus"
+      responses:
+        "200":
+          description: Updated request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BloodRequest"
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /emergencies:
+    get:
+      operationId: listEmergencies
+      tags: [emergencies]
+      summary: List SOS emergency cases
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/EmergencyStatus"
+      responses:
+        "200":
+          description: Emergency cases
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmergencyListResponse"
+    post:
+      operationId: createEmergency
+      tags: [emergencies]
+      summary: Create an SOS emergency case
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmergencyInput"
+      responses:
+        "201":
+          description: Emergency created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Emergency"
+
+  /emergencies/{emergencyId}/status:
+    patch:
+      operationId: updateEmergencyStatus
+      tags: [emergencies]
+      summary: Update an emergency status
+      parameters:
+        - $ref: "#/components/parameters/EmergencyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmergencyUpdateStatus"
+      responses:
+        "200":
+          description: Updated emergency
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Emergency"
+
+  /emergencies/trends:
+    get:
+      operationId: getEmergencyTrends
+      tags: [emergencies]
+      summary: Get emergency trend data
+      parameters:
+        - name: period
+          in: query
+          schema:
+            $ref: "#/components/schemas/TrendPeriod"
+      responses:
+        "200":
+          description: Emergency trends
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmergencyTrendResponse"
+
+  /facilities:
+    get:
+      operationId: listFacilities
+      tags: [facilities]
+      summary: List blood network facilities
+      parameters:
+        - name: type
+          in: query
+          schema:
+            $ref: "#/components/schemas/FacilityType"
+        - name: city
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Facilities
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FacilityListResponse"
+
+  /verification/qr/{token}:
+    get:
+      operationId: verifyQrPass
+      tags: [verification]
+      summary: Verify a donor or blood unit QR pass
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema: { type: string, minLength: 8 }
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QrVerification"
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /intelligence/guardian:
+    get:
+      operationId: getAiGuardian
+      tags: [intelligence]
+      summary: Get explainable operational risk signals
+      responses:
+        "200":
+          description: AI Guardian signals
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiGuardian"
+
+  /audit-logs:
+    get:
+      operationId: getAuditLogs
+      tags: [audit]
+      summary: Get immutable operational audit events
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+      responses:
+        "200":
+          description: Audit events
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditLogListResponse"
+
+  /integrations/status:
+    get:
+      operationId: getIntegrationStatus
+      tags: [integrations]
+      summary: Get configured national-system connector status
+      responses:
+        "200":
+          description: Connector status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntegrationStatusResponse"
+
 components:
+  parameters:
+    DonorId:
+      name: donorId
+      in: path
+      required: true
+      schema: { type: string, minLength: 1 }
+    UnitId:
+      name: unitId
+      in: path
+      required: true
+      schema: { type: string, minLength: 1 }
+    RequestId:
+      name: requestId
+      in: path
+      required: true
+      schema: { type: string, minLength: 1 }
+    EmergencyId:
+      name: emergencyId
+      in: path
+      required: true
+      schema: { type: string, minLength: 1 }
+    BloodGroup:
+      name: bloodGroup
+      in: query
+      schema:
+        $ref: "#/components/schemas/BloodGroup"
+    Role:
+      name: role
+      in: query
+      schema:
+        $ref: "#/components/schemas/UserRole"
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
   schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
     HealthStatus:
       type: object
+      required: [status, service, timestamp]
       properties:
-        status:
+        status: { type: string }
+        service: { type: string }
+        timestamp: { type: string, format: date-time }
+    BloodGroup:
+      type: string
+      enum: [A+, A-, B+, B-, AB+, AB-, O+, O-]
+    UserRole:
+      type: string
+      enum: [donor, hospital, blood-bank, lab, authority, founder]
+    InventoryStatus:
+      type: string
+      enum: [available, reserved, quarantined, transfused, expired]
+    RequestStatus:
+      type: string
+      enum: [open, matched, fulfilled, cancelled]
+    EmergencyStatus:
+      type: string
+      enum: [active, acknowledged, dispatched, resolved, cancelled]
+    FacilityType:
+      type: string
+      enum: [hospital, blood-bank, lab, ambulance, authority]
+    TrendPeriod:
+      type: string
+      enum: [24h, 7d, 30d, 90d]
+    Donor:
+      type: object
+      required: [id, donorCode, bloodGroup, city, eligibilityStatus, createdAt]
+      properties:
+        id: { type: string }
+        donorCode: { type: string }
+        fullName: { type: string }
+        bloodGroup: { $ref: "#/components/schemas/BloodGroup" }
+        city: { type: string }
+        phoneLast4: { type: ["string", "null"] }
+        eligibilityStatus:
           type: string
-      required:
-        - status
-
+          enum: [eligible, due-soon, ineligible, unknown]
+        lastDonationAt: { type: ["string", "null"], format: date-time }
+        nextEligibleAt: { type: ["string", "null"], format: date-time }
+        rewardTier: { type: ["string", "null"] }
+        bloodCredits: { type: integer, minimum: 0 }
+        verified: { type: boolean }
+        createdAt: { type: string, format: date-time }
+    DonorInput:
+      type: object
+      required: [fullName, bloodGroup, city]
+      properties:
+        fullName: { type: string, minLength: 2 }
+        bloodGroup: { $ref: "#/components/schemas/BloodGroup" }
+        city: { type: string, minLength: 2 }
+        phoneLast4: { type: string, minLength: 4, maxLength: 4 }
+    DonorUpdate:
+      type: object
+      properties:
+        fullName: { type: string, minLength: 2 }
+        city: { type: string, minLength: 2 }
+        phoneLast4: { type: string, minLength: 4, maxLength: 4 }
+        eligibilityStatus:
+          type: string
+          enum: [eligible, due-soon, ineligible, unknown]
+        nextEligibleAt: { type: ["string", "null"], format: date-time }
+        rewardTier: { type: ["string", "null"] }
+        bloodCredits: { type: integer, minimum: 0 }
+    DonorListResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Donor" } }
+        total: { type: integer }
+    DonationHistory:
+      type: object
+      required: [id, donorId, donatedAt, facilityName, units]
+      properties:
+        id: { type: string }
+        donorId: { type: string }
+        donatedAt: { type: string, format: date-time }
+        facilityName: { type: string }
+        units: { type: integer, minimum: 1 }
+        bloodGroup: { $ref: "#/components/schemas/BloodGroup" }
+    DonationHistoryResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/DonationHistory" } }
+        total: { type: integer }
+    BloodUnit:
+      type: object
+      required: [id, unitCode, bloodGroup, component, status, facilityId, collectedAt, expiresAt]
+      properties:
+        id: { type: string }
+        unitCode: { type: string }
+        bloodGroup: { $ref: "#/components/schemas/BloodGroup" }
+        component: { type: string, enum: [whole-blood, red-cells, plasma, platelets, cryo] }
+        status: { $ref: "#/components/schemas/InventoryStatus" }
+        facilityId: { type: string }
+        facilityName: { type: ["string", "null"] }
+        collectedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        verified: { type: boolean }
+        qrToken: { type: ["string", "null"] }
+    BloodUnitInput:
+      type: object
+      required: [unitCode, bloodGroup, component, facilityId, collectedAt, expiresAt]
+      properties:
+        unitCode: { type: string, minLength: 4 }
+        bloodGroup: { $ref: "#/components/schemas/BloodGroup" }
+        component: { type: string, enum: [whole-blood, red-cells, plasma, platelets, cryo] }
+        facilityId: { type: string, minLength: 1 }
+        collectedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        qrToken: { type: string, minLength: 8 }
+    BloodUnitUpdate:
+      type: object
+      properties:
+        status: { $ref: "#/components/schemas/InventoryStatus" }
+        facilityId: { type: string }
+        qrToken: { type: ["string", "null"] }
+    BloodUnitListResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/BloodUnit" } }
+        total: { type: integer }
+    BloodUnitTimelineEvent:
+      type: object
+      required: [id, eventType, unitCode, occurredAt]
+      properties:
+        id: { type: string }
+        eventType: { type: string }
+        unitCode: { type: string }
+        facilityName: { type: ["string", "null"] }
+        occurredAt: { type: string, format: date-time }
+        detail: { type: ["string", "null"] }
+    BloodUnitTimelineResponse:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/BloodUnitTimelineEvent" } }
+    BloodRequest:
+      type: object
+      required: [id, requestCode, bloodGroup, component, units, urgency, status, facilityId, createdAt]
+      properties:
+        id: { type: string }
+        requestCode: { type: string }
+        bloodGroup: { $ref: "#/components/schemas/BloodGroup" }
+        component: { type: string }
+        units: { type: integer, minimum: 1 }
+        urgency: { type: string, enum: [routine, urgent, critical] }
+        status: { $ref: "#/components/schemas/RequestStatus" }
+        facilityId: { type: string }
+        facilityName: { type: ["string", "null"] }
+        patientReference: { type: ["string", "null"] }
+        neededBy: { type: ["string", "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+    BloodRequestInput:
+      type: object
+      required: [bloodGroup, component, units, urgency, facilityId]
+      properties:
+        bloodGroup: { $ref: "#/components/schemas/BloodGroup" }
+        component: { type: string, minLength: 2 }
+        units: { type: integer, minimum: 1, maximum: 100 }
+        urgency: { type: string, enum: [routine, urgent, critical] }
+        facilityId: { type: string }
+        patientReference: { type: string }
+        neededBy: { type: string, format: date-time }
+    BloodRequestUpdateStatus:
+      type: object
+      required: [status]
+      properties:
+        status: { $ref: "#/components/schemas/RequestStatus" }
+    BloodRequestListResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/BloodRequest" } }
+        total: { type: integer }
+    Emergency:
+      type: object
+      required: [id, caseCode, bloodGroup, units, urgency, status, city, createdAt]
+      properties:
+        id: { type: string }
+        caseCode: { type: string }
+        bloodGroup: { $ref: "#/components/schemas/BloodGroup" }
+        units: { type: integer, minimum: 1 }
+        urgency: { type: string, enum: [urgent, critical] }
+        status: { $ref: "#/components/schemas/EmergencyStatus" }
+        city: { type: string }
+        hospitalName: { type: ["string", "null"] }
+        coordinatorPhoneLast4: { type: ["string", "null"] }
+        responseEtaMinutes: { type: ["integer", "null"] }
+        createdAt: { type: string, format: date-time }
+    EmergencyInput:
+      type: object
+      required: [bloodGroup, units, urgency, city]
+      properties:
+        bloodGroup: { $ref: "#/components/schemas/BloodGroup" }
+        units: { type: integer, minimum: 1, maximum: 100 }
+        urgency: { type: string, enum: [urgent, critical] }
+        city: { type: string, minLength: 2 }
+        hospitalName: { type: string }
+        coordinatorPhoneLast4: { type: string, minLength: 4, maxLength: 4 }
+    EmergencyUpdateStatus:
+      type: object
+      required: [status]
+      properties:
+        status: { $ref: "#/components/schemas/EmergencyStatus" }
+        responseEtaMinutes: { type: ["integer", "null"], minimum: 0 }
+    EmergencyListResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Emergency" } }
+        total: { type: integer }
+    EmergencyTrendPoint:
+      type: object
+      required: [label, emergencies, fulfilled]
+      properties:
+        label: { type: string }
+        emergencies: { type: integer }
+        fulfilled: { type: integer }
+    EmergencyTrendResponse:
+      type: object
+      required: [period, points]
+      properties:
+        period: { $ref: "#/components/schemas/TrendPeriod" }
+        points: { type: array, items: { $ref: "#/components/schemas/EmergencyTrendPoint" } }
+    Facility:
+      type: object
+      required: [id, name, type, city, state, verified]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        type: { $ref: "#/components/schemas/FacilityType" }
+        city: { type: string }
+        state: { type: string }
+        verified: { type: boolean }
+        liveUnits: { type: integer }
+        lastSyncedAt: { type: ["string", "null"], format: date-time }
+    FacilityListResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Facility" } }
+        total: { type: integer }
+    QrVerification:
+      type: object
+      required: [valid, verificationType, verifiedAt]
+      properties:
+        valid: { type: boolean }
+        verificationType: { type: string, enum: [donor, blood-unit, unknown] }
+        referenceId: { type: ["string", "null"] }
+        displayLabel: { type: ["string", "null"] }
+        status: { type: ["string", "null"] }
+        verifiedAt: { type: string, format: date-time }
+        reason: { type: ["string", "null"] }
+    AiGuardianSignal:
+      type: object
+      required: [id, title, severity, description, source]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        severity: { type: string, enum: [info, watch, urgent, critical] }
+        description: { type: string }
+        source: { type: string }
+        createdAt: { type: ["string", "null"], format: date-time }
+    AiGuardian:
+      type: object
+      required: [status, signals, generatedAt]
+      properties:
+        status: { type: string, enum: [clear, monitoring, attention] }
+        signals: { type: array, items: { $ref: "#/components/schemas/AiGuardianSignal" } }
+        generatedAt: { type: string, format: date-time }
+    AuditLog:
+      type: object
+      required: [id, action, actorType, occurredAt]
+      properties:
+        id: { type: string }
+        action: { type: string }
+        actorType: { $ref: "#/components/schemas/UserRole" }
+        resourceType: { type: ["string", "null"] }
+        resourceId: { type: ["string", "null"] }
+        occurredAt: { type: string, format: date-time }
+        metadata: { type: object, additionalProperties: true }
+    AuditLogListResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/AuditLog" } }
+        total: { type: integer }
+    IntegrationStatus:
+      type: object
+      required: [key, name, status]
+      properties:
+        key: { type: string }
+        name: { type: string }
+        status: { type: string, enum: [configured, unavailable, planned] }
+        detail: { type: ["string", "null"] }
+        lastSyncedAt: { type: ["string", "null"], format: date-time }
+    IntegrationStatusResponse:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/IntegrationStatus" } }
+    DashboardSummary:
+      type: object
+      required: [role, metrics, bloodGroupCounts, recentActivity]
+      properties:
+        role: { $ref: "#/components/schemas/UserRole" }
+        metrics:
+          type: object
+          additionalProperties: { type: number }
+        bloodGroupCounts:
+          type: array
+          items:
+            type: object
+            required: [bloodGroup, availableUnits, openRequests]
+            properties:
+              bloodGroup: { $ref: "#/components/schemas/BloodGroup" }
+              availableUnits: { type: integer }
+              openRequests: { type: integer }
+        recentActivity:
+          type: array
+          items: { $ref: "#/components/schemas/AuditLog" }

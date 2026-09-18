@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Rakt Kavach National Blood Grid"
+description = "A unified progressive web app for India's blood network, connecting donors, hospitals, labs, blood banks, and authorities through emergency response, inventory visibility, verification, and operational dashboards."
+version = "1.0.0"
+id = "artifacts/rakt-kavach"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25231
+
+[services.development]
+run = "pnpm --filter @workspace/rakt-kavach run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/rakt-kavach", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/rakt-kavach/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25231"
+BASE_PATH = "/"
