@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -267,7 +266,7 @@
 
 @layer utilities {
   .rk-grid { background-image: linear-gradient(hsl(var(--border) / .32) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--border) / .32) 1px, transparent 1px); background-size: 32px 32px; }
-  .rk-noise::after { content: ''; position: fixed; inset: 0; pointer-events: none; opacity: .025; z-index: 40; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E"); }
+  .rk-noise::after { content: ''; position: fixed; inset: 0; pointer-events: none; opacity: .025; z-index: 40; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E"); }
   .rk-card { @apply border border-border bg-card shadow-sm; }
   .rk-kicker { @apply font-mono text-[10px] uppercase tracking-[.18em] text-muted-foreground; }
   .rk-skeleton { @apply animate-pulse rounded-md bg-muted; }
@@ -281,7 +280,7 @@
 
 .font-display { font-family: var(--app-font-serif); }
 .font-mono { font-family: var(--app-font-mono); }
-.field { width: 100%; min-height: 40px; border: 1px solid hsl(var(--input)); border-radius: .6rem; background: hsl(var(--card)); padding: .6rem .75rem; font-size: .75rem; color: hsl(var(--foreground)); outline: none; transition: border-color .2s, box-shadow .2s; }
+.field { width: 100%; min-height: 40px; border: 1px solid hsl(var(--input)); border-radius: .6rem; background: hsl(var(--card)); padding: .6rem .75rem; font-size: .75rem; color: hsl(var(--foreground)); }
 .field::placeholder { color: hsl(var(--muted-foreground)); }
 .field:focus { border-color: hsl(var(--primary)); box-shadow: 0 0 0 3px hsl(var(--primary) / .12); }
 .status { display: inline-flex; align-items: center; gap: .35rem; border-radius: 999px; padding: .25rem .55rem; font-family: var(--app-font-mono); font-size: 10px; text-transform: capitalize; white-space: nowrap; }
@@ -290,7 +289,7 @@
 .status-danger { background: hsl(var(--primary) / .12); color: hsl(var(--primary)); }
 .status-neutral { background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); }
 .data-table { width: 100%; min-width: 680px; border-collapse: collapse; font-size: 12px; }
-.data-table th { padding: .6rem .7rem; text-align: left; font-family: var(--app-font-mono); font-size: 9px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: hsl(var(--muted-foreground)); border-bottom: 1px solid hsl(var(--border)); }
+.data-table th { padding: .6rem .7rem; text-align: left; font-family: var(--app-font-mono); font-size: 9px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: hsl(var(--muted-foreground)); }
 .data-table td { padding: .8rem .7rem; border-bottom: 1px solid hsl(var(--border)); vertical-align: middle; color: hsl(var(--foreground) / .86); }
 .data-table tbody tr:last-child td { border-bottom: 0; }
 
@@ -338,7 +337,7 @@
 
   /**
    * Toggleable backgrounds go behind the content. Hoverable/active goes on top.
-   * This way they can stack/compound. Both will overlap the parent's borders!
+   * This way they can stack/compound. They will overlap the parent's borders!
    * So borders will be automatically adjusted both on toggle, and hover/active,
    * and they will be compounded.
    */
@@ -376,7 +375,7 @@
   .active-elevate:not(.no-default-active-elevate)::after,
   .hover-elevate-2:not(.no-default-hover-elevate)::after,
   .active-elevate-2:not(.no-default-active-elevate)::after {
-    content: '';
+    content: none;
     pointer-events: none;
     position: absolute;
     inset: 0px;
