@@ -50,7 +50,7 @@ export default defineConfig({
   },
   root: appRoot,
   build: {
-    outDir: path.resolve(appRoot, 'dist/public'),
+    outDir: path.resolve(appRoot, 'dist'),
     emptyOutDir: true,
   },
   server: {

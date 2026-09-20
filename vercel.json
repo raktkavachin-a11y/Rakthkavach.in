@@ -2,7 +2,7 @@
   "framework": "vite",
   "installCommand": "pnpm install --no-frozen-lockfile",
   "buildCommand": "pnpm run build",
-  "outputDirectory": "artifacts/rakt-kavach/dist/public",
+  "outputDirectory": "artifacts/rakt-kavach/dist",
   "cleanUrls": true,
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }

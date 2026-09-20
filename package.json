@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "pnpm --filter @workspace/rakt-kavach run dev",
-    "build": "pnpm --filter @workspace/rakt-kavach run build",
+    "build": "cd artifacts/rakt-kavach && vite build",
     "start": "pnpm --filter @workspace/rakt-kavach run serve",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
     "typecheck:libs": "tsc --build"
