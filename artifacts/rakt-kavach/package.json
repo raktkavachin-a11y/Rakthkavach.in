@@ -29,6 +29,7 @@
     "@tailwindcss/vite": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "~5.9.3",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vite-plugin-pwa": "catalog:"
   }
 }
