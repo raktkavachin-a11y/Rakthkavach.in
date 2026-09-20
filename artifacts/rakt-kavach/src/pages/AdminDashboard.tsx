@@ -1,13 +1,57 @@
-import { Activity, AlertTriangle, BarChart3, BellRing, Building2, Globe2, Siren, Truck } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
-
-import { useAuth } from '@/context/auth';
+import { Activity, AlertTriangle, Building2, Globe2, Truck } from 'lucide-react';
+import { useAuth, type AuthRole } from '@/context/auth';
 import { useI18n } from '@/context/i18n';
+import { supabase } from '@/context/supabase';
+
+type Counter = { label: string; value: number; icon: typeof Building2 };
+const seedFallback = { donors: 0, institutions: 0, bloodWallets: 0 };
+const sosRoles = new Set<AuthRole>(['who_command', 'national_board', 'state_command']);
 
 export default function AdminDashboard(): JSX.Element {
-  const { user, logout } = useAuth(); const [, navigate] = useLocation(); const { t } = useI18n(); const [siren, setSiren] = useState(false); const [scope, setScope] = useState('block_officer');
+  const { user, logout } = useAuth();
+  const [, navigate] = useLocation();
+  const { t } = useI18n();
+  const [sosActive, setSosActive] = useState(false);
+  const [metrics, setMetrics] = useState(seedFallback);
+
+  useEffect(() => {
+    let active = true;
+    const loadMetrics = async (): Promise<void> => {
+      const [donors, institutions, wallets] = await Promise.all([
+        supabase.from('donors').select('*', { count: 'exact', head: true }),
+        supabase.from('institutions').select('*', { count: 'exact', head: true }),
+        supabase.from('blood_wallets').select('*', { count: 'exact', head: true }),
+      ]);
+      if (!active) return;
+      setMetrics({
+        donors: donors.count ?? seedFallback.donors,
+        institutions: institutions.count ?? seedFallback.institutions,
+        bloodWallets: wallets.count ?? seedFallback.bloodWallets,
+      });
+    };
+    void loadMetrics();
+    return () => { active = false; };
+  }, []);
+
   if (!user) { navigate('/'); return null; }
-  const cards = [['0','Verified donors',Building2],['0','Active facilities',Globe2],['0','Open requests',AlertTriangle],['0','Logistics routes',Truck]] as const;
-  return <main className={`min-h-screen bg-[#030712] p-4 text-white md:p-8 ${siren ? 'animate-pulse' : ''}`}><header className="mx-auto mb-8 flex max-w-7xl items-center justify-between"><div><p className="text-xs uppercase tracking-[.2em] text-rose-300">{t('whoCommand')} · SOS matrix</p><h1 className="text-3xl font-black">Administrative command center</h1></div><button onClick={() => { logout(); navigate('/'); }} className="rounded-lg border border-white/10 px-3 py-2 text-xs">{t('logout')}</button></header>{siren && <div role="alert" className="fixed inset-0 z-50 grid place-items-center bg-rose-950/95 p-6 text-center"><div><Siren size={72} className="mx-auto animate-bounce text-rose-300" /><h2 className="mt-5 text-4xl font-black">SOS CRISIS ACTIVE</h2><p className="mt-3 text-rose-100">Emergency broadcast dispatched to lower administrative hierarchies.</p><button onClick={() => setSiren(false)} className="mt-6 rounded-xl bg-white px-5 py-3 font-bold text-rose-900">Acknowledge takeover</button></div></div>}<div className="mx-auto max-w-7xl"><div className="flex flex-wrap gap-2">{['block_officer','district_authority','state_command','national_board','who_command'].map((value) => <button key={value} onClick={() => setScope(value)} className={`rounded-lg border px-3 py-2 text-xs ${scope === value ? 'border-cyan-300 bg-cyan-300/10 text-cyan-200' : 'border-white/10 text-slate-400'}`}>{value.replaceAll('_', ' ')}</button>)}</div><div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{cards.map(([value,label,Icon]) => <div key={label} className="rounded-xl border border-white/10 bg-white/[.04] p-5"><Icon size={18} className="text-cyan-300" /><p className="mt-4 text-3xl font-black">{value}</p><p className="text-xs text-slate-400">{label}</p></div>)}</div><div className="mt-5 grid gap-5 lg:grid-cols-[1.2fr_.8fr]"><section className="rounded-2xl border border-white/10 bg-white/[.04] p-6"><div className="flex items-center gap-3"><BarChart3 className="text-cyan-300" /><h2 className="text-xl font-bold">{scope.replaceAll('_', ' ')} operating view</h2></div><div className="mt-6 space-y-4">{['Collection readiness','Inter-region balance','Anomaly tracker','Emergency buffer'].map((label, index) => <div key={label}><div className="mb-2 flex justify-between text-xs"><span>{label}</span><span className="text-cyan-300">0%</span></div><div className="h-2 rounded-full bg-white/10"><div className="h-2 rounded-full bg-cyan-400" style={{ width: `${(index + 1) * 12}%` }} /></div></div>)}</div></section><section className="rounded-2xl border border-rose-400/20 bg-rose-400/5 p-6"><div className="flex items-center gap-3"><BellRing className="text-rose-300" /><div><p className="text-xs uppercase tracking-widest text-rose-300">WHO / Global Commander</p><h2 className="text-xl font-bold">SOS Crisis Command</h2></div></div><p className="mt-4 text-sm text-slate-300">Trigger a high-priority visual takeover for every connected lower hierarchy.</p><button onClick={() => setSiren(true)} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-rose-600 px-4 py-3 font-bold hover:bg-rose-500"><Siren size={17} /> Broadcast SOS takeover</button><p className="mt-3 flex items-center gap-2 text-xs text-slate-500"><Activity size={14} /> Audio playback requires a user gesture in the browser.</p></section></div></div></main>;
+  const canTriggerSos = sosRoles.has(user.role);
+  const cards: Counter[] = [
+    { value: metrics.donors, label: 'Verified donors', icon: Building2 },
+    { value: metrics.institutions, label: 'Verified institutions', icon: Globe2 },
+    { value: metrics.bloodWallets, label: 'Blood wallets', icon: Activity },
+    { value: 0, label: 'Logistics routes', icon: Truck },
+  ];
+
+  return <main className={`min-h-screen bg-[#030712] p-4 text-white md:p-8 ${sosActive ? 'animate-pulse' : ''}`}>
+    <header className="mx-auto mb-8 flex max-w-7xl items-center justify-between">
+      <div><p className="text-xs uppercase tracking-[.2em] text-rose-300">{t('whoCommand')} · command center</p><h1 className="text-3xl font-black">Administrative command center</h1></div>
+      <button onClick={() => { void logout(); navigate('/'); }} className="rounded-lg border border-white/10 px-3 py-2 text-xs">{t('logout')}</button>
+    </header>
+    <section className="mx-auto grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {cards.map(({ label, value, icon: Icon }) => <article key={label} className="rounded-2xl border border-white/10 bg-slate-950/70 p-5"><Icon className="mb-4 text-cyan-300" /><p className="text-3xl font-black">{value}</p><p className="text-sm text-slate-400">{label}</p></article>)}
+    </section>
+    {canTriggerSos && <section className="mx-auto mt-6 max-w-7xl rounded-2xl border border-rose-400/30 bg-rose-950/20 p-5"><div className="flex items-center justify-between gap-4"><div><h2 className="font-bold">SOS response</h2><p className="text-sm text-slate-400">Available only to WHO, National, and State command views.</p></div><button onClick={() => setSosActive((value) => !value)} className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-bold">{sosActive ? 'Deactivate SOS' : 'Trigger SOS'}</button></div></section>}
+  </main>;
 }
