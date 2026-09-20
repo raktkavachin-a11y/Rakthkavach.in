@@ -22,6 +22,16 @@ timeoutMs = 20000
 [nix]
 packages = ["psmisc"]
 
+[userenv]
+
+[userenv.shared]
+"​VITE_SUPABASE_ANON_KEY" = "sb_publishable_u3vJIsC3PthPgiQwvf7WaA_M-DlX9C2"
+"​VITE_SUPABASE_URL" = "https://pqpnxqtoamlxxhmkglpg.supabase.co"
+
 [[ports]]
 localPort = 3000
 externalPort = 3000
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
