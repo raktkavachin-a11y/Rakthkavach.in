@@ -4,12 +4,10 @@
   "license": "MIT",
   "private": true,
   "packageManager": "pnpm@10.26.1",
-  "engines": {
-    "node": ">=22.0.0"
-  },
+  "engines": { "node": ">=22.0.0" },
   "scripts": {
     "dev": "pnpm --filter @workspace/rakt-kavach run dev",
-    "build": "cd artifacts/rakt-kavach && vite build",
+    "build": "pnpm exec vite build --config artifacts/rakt-kavach/vite.config.ts",
     "start": "pnpm --filter @workspace/rakt-kavach run serve",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
     "typecheck:libs": "tsc --build"
@@ -18,7 +16,18 @@
     "@replit/connectors-sdk": "^0.4.3"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^25.9.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
     "prettier": "^3.9.6",
-    "typescript": "~5.9.3"
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "tailwindcss": "^4.3.3",
+    "tw-animate-css": "^1.4.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.2",
+    "vite-plugin-pwa": "^1.0.2"
   }
 }
