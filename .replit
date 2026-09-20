@@ -1,6 +1,9 @@
 modules = ["nodejs-24"]
 
+run = "pnpm --filter @workspace/rakt-kavach run serve || npx vite preview --config artifacts/rakt-kavach/vite.config.ts --port 3000 --host 0.0.0.0"
+
 [deployment]
+run = ["pnpm", "--filter", "@workspace/rakt-kavach", "run", "serve"]
 router = "application"
 deploymentTarget = "autoscale"
 
@@ -25,8 +28,8 @@ packages = ["psmisc"]
 [userenv]
 
 [userenv.shared]
-"​VITE_SUPABASE_ANON_KEY" = "sb_publishable_u3vJIsC3PthPgiQwvf7WaA_M-DlX9C2"
-"​VITE_SUPABASE_URL" = "https://pqpnxqtoamlxxhmkglpg.supabase.co"
+VITE_SUPABASE_ANON_KEY = "sb_publishable_u3vJIsC3PthPgiQwvf7WaA_M-DlX9C2"
+VITE_SUPABASE_URL = "https://pqpnxqtoamlxxhmkglpg.supabase.co"
 
 [[ports]]
 localPort = 3000
