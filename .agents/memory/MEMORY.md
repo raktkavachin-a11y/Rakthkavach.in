@@ -1,1 +1,2 @@
 - [Generated API client typings](api-contract-and-browser-types.md) — keep iterable DOM types enabled for Orval-generated fetch clients.
+- [Artifact port isolation](artifact-port-isolation.md) — managed artifacts need service-level ports, not a shared workspace PORT override.

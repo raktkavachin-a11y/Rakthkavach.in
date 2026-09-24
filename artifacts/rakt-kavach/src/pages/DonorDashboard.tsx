@@ -8,7 +8,7 @@ import { useAuth } from '@/context/auth';
 import { supabase } from '@/context/supabase';
 import type { Donor, InventoryUnit } from '@/types/database';
 
-export default function DonorDashboard(): JSX.Element {
+export default function DonorDashboard(): JSX.Element | null {
   const { user, logout } = useAuth(); const [, navigate] = useLocation(); const [donor, setDonor] = useState<Donor | null>(null); const [units, setUnits] = useState<InventoryUnit[]>([]); const [radius, setRadius] = useState(50); const [recipient, setRecipient] = useState(''); const [message, setMessage] = useState('');
   useEffect(() => { let active = true; const load = async (): Promise<void> => { const donorQuery = await supabase.from('donors').select('*').limit(1).maybeSingle(); const inventoryQuery = await supabase.from('blood_inventory').select('*').limit(20); if (active) { setDonor(donorQuery.data); setUnits(inventoryQuery.data ?? []); } }; void load(); return () => { active = false; }; }, []);
   if (!user) { navigate('/'); return null; }

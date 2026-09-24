@@ -7,7 +7,7 @@ import { useI18n } from '@/context/i18n';
 import { supabase } from '@/context/supabase';
 import type { InventoryUnit } from '@/types/database';
 
-export default function HospitalDashboard(): JSX.Element {
+export default function HospitalDashboard(): JSX.Element | null {
   const { user, logout } = useAuth(); const [, navigate] = useLocation(); const { t } = useI18n(); const [token, setToken] = useState(''); const [result, setResult] = useState(''); const [inventory, setInventory] = useState<InventoryUnit[]>([]);
   useEffect(() => { let active = true; const load = async (): Promise<void> => { const query = await supabase.from('blood_inventory').select('*').limit(30); if (active) setInventory(query.data ?? []); }; void load(); return () => { active = false; }; }, []);
   const scan = (): void => { if (!token.trim()) { setResult('Present a donor or unit QR identifier.'); return; } setResult('Eligibility check queued: identity and safety screening required before donation.'); };

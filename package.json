@@ -8,8 +8,9 @@
   "scripts": {
     "dev": "pnpm --filter @workspace/rakt-kavach run dev",
     "build": "pnpm --filter @workspace/rakt-kavach run build",
+    "build:api": "pnpm --filter @workspace/api-server run build",
     "build:mockup": "pnpm --filter @workspace/mockup-sandbox run build",
-    "build:all": "pnpm run build && pnpm run build:mockup",
+    "build:all": "pnpm run build && pnpm run build:mockup && pnpm run build:api",
     "vercel-build": "pnpm run build",
     "start": "pnpm --filter @workspace/rakt-kavach run serve",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",

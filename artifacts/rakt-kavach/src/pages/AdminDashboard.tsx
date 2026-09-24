@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import NationalGrid, { type CommandScope } from '@/components/NationalGrid';
 import { useAuth } from '@/context/auth';
 
-export default function AdminDashboard(): JSX.Element {
+export default function AdminDashboard(): JSX.Element | null {
   const { user, logout, canAccess } = useAuth(); const [, navigate] = useLocation();
   if (!user || !canAccess(user.role) || user.role === 'donor' || user.authMethod !== 'institution') { navigate('/'); return null; }
   const scope = user.role as CommandScope;
