@@ -7,7 +7,10 @@
   "engines": { "node": ">=22.0.0" },
   "scripts": {
     "dev": "pnpm --filter @workspace/rakt-kavach run dev",
-    "build": "pnpm exec vite build --config artifacts/rakt-kavach/vite.config.ts",
+    "build": "pnpm --filter @workspace/rakt-kavach run build",
+    "build:mockup": "pnpm --filter @workspace/mockup-sandbox run build",
+    "build:all": "pnpm run build && pnpm run build:mockup",
+    "vercel-build": "pnpm run build",
     "start": "pnpm --filter @workspace/rakt-kavach run serve",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
     "typecheck:libs": "tsc --build"

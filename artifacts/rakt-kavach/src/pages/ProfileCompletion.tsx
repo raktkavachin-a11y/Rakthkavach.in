@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { useAuth } from '@/context/auth';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-export default function ProfileCompletion(): JSX.Element {
+export default function ProfileCompletion(): JSX.Element | null {
   const { user, saveDonorProfile } = useAuth(); const [, navigate] = useLocation(); const fileRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ full_name: user?.name ?? '', blood_group: '', state: '', district: '', block: '', pincode: '', photo_url: '' }); const [error, setError] = useState(''); const [saving, setSaving] = useState(false);
   if (!user || user.role !== 'donor') { navigate('/'); return null; }

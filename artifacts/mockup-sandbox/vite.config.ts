@@ -5,7 +5,7 @@ import path from "path";
 import { mockupPreviewPlugin } from "./mockupPreviewPlugin";
 
 const port = Number(process.env.PORT || 3000);
-const basePath = process.env.BASE_PATH || "/";
+const basePath = process.env.BASE_PATH || "/__mockup";
 
 export default defineConfig({
   base: basePath,

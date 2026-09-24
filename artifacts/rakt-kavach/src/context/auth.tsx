@@ -4,6 +4,15 @@ import { supabase } from '@/context/supabase';
 export type AuthRole = 'donor' | 'hospital' | 'laboratory' | 'block_officer' | 'district_authority' | 'state_command' | 'national_board' | 'who_command' | 'system_admin';
 export const INSTITUTIONAL_ROLES: AuthRole[] = ['hospital', 'laboratory', 'block_officer', 'district_authority', 'state_command', 'national_board', 'who_command', 'system_admin'];
 const COMMAND_ROLES = new Set<AuthRole>(INSTITUTIONAL_ROLES);
+export interface DonorProfileInput {
+  full_name: string;
+  blood_group: string;
+  state: string;
+  district: string;
+  block: string;
+  pincode: string;
+  photo_url: string;
+}
 
 export interface AuthUser {
   id: string;
@@ -27,6 +36,7 @@ interface AuthContextValue {
   verifyDonorOtp: (phone: string, otp: string, name: string) => Promise<void>;
   loginInstitution: (credentials: InstitutionCredentials) => Promise<void>;
   requestPasswordReset: (email: string) => Promise<void>;
+  saveDonorProfile: (profile: DonorProfileInput) => Promise<void>;
   canAccess: (role: AuthRole) => boolean;
   logout: () => Promise<void>;
 }
@@ -66,9 +76,15 @@ export function AuthProvider({ children }: PropsWithChildren): JSX.Element {
     if (error) throw new Error(error.message);
   };
 
+  const saveDonorProfile = async (profile: DonorProfileInput): Promise<void> => {
+    if (!user) throw new Error('You must be signed in to complete a donor profile.');
+    const { error } = await supabase.from('donors').upsert({ id: user.id, ...profile }, { onConflict: 'id' });
+    if (error) throw new Error(error.message);
+  };
+
   const canAccess = (role: AuthRole): boolean => Boolean(user && user.role === role && (user.authMethod === 'institution' || role === 'donor'));
   const logout = async (): Promise<void> => { await supabase.auth.signOut(); setUser(null); };
-  const value = useMemo(() => ({ user, requestDonorOtp, verifyDonorOtp, loginInstitution, requestPasswordReset, canAccess, logout }), [user]);
+  const value = useMemo(() => ({ user, requestDonorOtp, verifyDonorOtp, loginInstitution, requestPasswordReset, saveDonorProfile, canAccess, logout }), [user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
