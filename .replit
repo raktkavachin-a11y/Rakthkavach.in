@@ -33,8 +33,6 @@ VITE_SUPABASE_URL = "https://pqpnxqtoamlxxhmkglpg.supabase.co"
 
 [[ports]]
 localPort = 3000
-externalPort = 3000
 
 [[ports]]
 localPort = 8080
-externalPort = 8080
