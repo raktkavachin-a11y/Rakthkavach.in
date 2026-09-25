@@ -60,7 +60,7 @@ export default function Login(): JSX.Element {
     try {
       if (tier === 'donor') {
         if (!otpSent) { await sendOtp(); return; }
-        if (!/^[6-9]\d{9}$/.test(phone) \vert{}\vert{} !/^\d{6}$/.test(otp)) { setError('Incorrect OTP'); return; }
+        if (!/^[6-9]\d{9}$/.test(phone) || !/^\d{6}$/.test(otp)) { setError('Incorrect OTP'); return; }
         if (!name.trim()) { setError('Enter your name to continue.'); return; }
         await verifyDonorOtp(`+91${phone}`, otp, name.trim()); 
         navigate('/donor'); 
