@@ -123,7 +123,7 @@ export default function Login(): JSX.Element {
         </section>
 
         {/* राइट सेक्शन: डार्क नियॉन फॉर्म */}
-        <form onSubmit={submit} className="rounded-3xl border border-slate-800 bg-slate-950/80 backdrop-blur-xl p-6 md:p-8 shadow-2xl relative border-t-cyan-500/40">
+        <form noValidate onSubmit={submit} className="rounded-3xl border border-slate-800 bg-slate-950/80 backdrop-blur-xl p-6 md:p-8 shadow-2xl relative border-t-cyan-500/40">
           
           {/* हेडर और डार्क थीम भाषा सेलेक्टर */}
           <div className="mb-6 flex items-center justify-between border-b border-slate-900 pb-4">
@@ -317,7 +317,7 @@ export default function Login(): JSX.Element {
             <h3 className="text-lg font-bold text-white">Reset Institution Password</h3>
             <p className="mt-1 text-xs text-slate-400">Enter your registered domain email to receive reset instructions.</p>
             
-            <form onSubmit={resetPassword} className="mt-4 space-y-4">
+            <form noValidate onSubmit={resetPassword} className="mt-4 space-y-4">
               <input 
                 type="email"
                 value={email} 
