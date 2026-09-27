@@ -1,9 +1,1 @@
-{
-  "framework": "vite",
-  "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm run build",
-  "outputDirectory": "artifacts/rakt-kavach/dist",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
-}
+{"framework":"vite","buildCommand":"pnpm --filter @workspace/rakt-kavach build","outputDirectory":"artifacts/rakt-kavach/dist"}
