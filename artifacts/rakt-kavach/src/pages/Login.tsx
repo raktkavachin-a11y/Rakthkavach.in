@@ -3,6 +3,7 @@ import React, { FormEvent, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth, type AuthRole, INSTITUTIONAL_ROLES } from '@/context/auth';
 import { languageLabels, supportedLanguages, useI18n } from '@/context/i18n';
+import { isMockOtpEnabled, MOCK_OTP } from '@/context/supabase';
 
 type LoginTier = 'donor' | 'institution';
 
@@ -48,7 +49,7 @@ export default function Login(): JSX.Element {
     try { 
       await requestDonorOtp(`+91${phone}`); 
       setOtpSent(true); 
-      setMessage('A real OTP was sent to your mobile number.'); 
+      setMessage(isMockOtpEnabled ? `Demo OTP ready: enter ${MOCK_OTP} to continue.` : 'A real OTP was sent to your mobile number.');
     }
     catch { setError('Unable to send OTP. Please try again.'); }
     finally { setLoading(false); }
@@ -114,7 +115,7 @@ export default function Login(): JSX.Element {
           </p>
           <div className="mt-6 flex flex-wrap gap-3 text-xs font-bold">
             <span className="rounded-xl bg-slate-950/80 border border-slate-800/80 px-3.5 py-2 flex items-center text-slate-300">
-              <ShieldCheck className="mr-2 h-4 w-4 text-emerald-400" /> Real OTP Protected
+              <ShieldCheck className="mr-2 h-4 w-4 text-emerald-400" /> {isMockOtpEnabled ? `Demo OTP: ${MOCK_OTP}` : 'Real OTP Protected'}
             </span>
             <span className="rounded-xl bg-slate-950/80 border border-slate-800/80 px-3.5 py-2 flex items-center text-slate-300">
               <Globe2 className="mr-2 h-4 w-4 text-cyan-400" /> Live Grid Active
@@ -136,7 +137,7 @@ export default function Login(): JSX.Element {
               <Languages className="h-3.5 w-3.5 text-cyan-400" />
               <select 
                 value={language} 
-                onChange={e => setLanguage(e.target.value)} 
+                 onChange={e => setLanguage(e.target.value as typeof language)}
                 className="bg-slate-900 text-slate-200 font-bold focus:outline-none cursor-pointer border-none"
               >
                 {supportedLanguages.map(item => (
@@ -215,7 +216,7 @@ export default function Login(): JSX.Element {
                         type="text"
                         value={otp} 
                         onChange={e => setOtp(e.target.value)} 
-                        placeholder="6-digit OTP code" 
+                         placeholder={isMockOtpEnabled ? MOCK_OTP : '6-digit OTP code'}
                         maxLength={6}
                         className="w-full rounded-xl border border-slate-800 bg-slate-900/80 pl-10 pr-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors font-mono tracking-widest placeholder:text-slate-600" 
                       />

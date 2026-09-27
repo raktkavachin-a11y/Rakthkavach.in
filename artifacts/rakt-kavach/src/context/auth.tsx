@@ -1,5 +1,5 @@
 import { type PropsWithChildren, createContext, useContext, useMemo, useState } from 'react';
-import { supabase } from '@/context/supabase';
+import { isMockOtpEnabled, MOCK_OTP, supabase } from '@/context/supabase';
 
 export type AuthRole = 'donor' | 'hospital' | 'laboratory' | 'block_officer' | 'district_authority' | 'state_command' | 'national_board' | 'who_command' | 'system_admin';
 export const INSTITUTIONAL_ROLES: AuthRole[] = ['hospital', 'laboratory', 'block_officer', 'district_authority', 'state_command', 'national_board', 'who_command', 'system_admin'];
@@ -47,11 +47,17 @@ export function AuthProvider({ children }: PropsWithChildren): JSX.Element {
   const [user, setUser] = useState<AuthUser | null>(null);
 
   const requestDonorOtp = async (phone: string): Promise<void> => {
+    if (isMockOtpEnabled) return;
     const { error } = await supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: true } });
     if (error) throw new Error(error.message);
   };
 
   const verifyDonorOtp = async (phone: string, otp: string, name: string): Promise<void> => {
+    if (isMockOtpEnabled) {
+      if (otp !== MOCK_OTP) throw new Error(`Use the demo OTP ${MOCK_OTP}.`);
+      setUser({ id: `demo-donor-${phone.replace(/\D/g, '')}`, name, role: 'donor', region: 'India', authMethod: 'otp' });
+      return;
+    }
     const { data, error } = await supabase.auth.verifyOtp({ phone, token: otp, type: 'sms' });
     if (error || !data.user) throw new Error('Incorrect OTP');
     const metadataRole = data.user.user_metadata?.role as AuthRole | undefined;

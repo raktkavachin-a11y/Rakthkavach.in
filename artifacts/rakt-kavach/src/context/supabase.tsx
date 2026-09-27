@@ -4,6 +4,12 @@ import type { Database } from '@/types/database';
 
 const configuredUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
 const configuredAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
+export const MOCK_OTP = '123456';
+export const isMockOtpEnabled =
+  import.meta.env.DEV ||
+  import.meta.env.VITE_MOCK_OTP === 'true' ||
+  !configuredUrl ||
+  !configuredAnonKey;
 
 // Keep the static build usable when environment variables have not been added yet.
 // Requests made with these placeholders fail safely instead of preventing the app from rendering.

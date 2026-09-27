@@ -17,7 +17,7 @@ run = "pnpm --filter @workspace/rakt-kavach run dev"
 [services.production]
 build = [ "pnpm", "--filter", "@workspace/rakt-kavach", "run", "build" ]
 serve = "static"
-publicDir = "artifacts/rakt-kavach/dist/public"
+publicDir = "artifacts/rakt-kavach/dist"
 
 [[services.production.rewrites]]
 from = "/*"

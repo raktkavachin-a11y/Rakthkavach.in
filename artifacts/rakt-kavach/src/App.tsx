@@ -13,15 +13,6 @@ import ProfileCompletion from '@/pages/ProfileCompletion';
 
 const queryClient = new QueryClient();
 
-// ⚡ प्रोग्रेसिव ऐप (PWA) डाउनलोड पॉपअप को एक्टिव करने का कोड यहाँ जोड़ दिया है
-if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('Rakt Kavach PWA Activation Success!'))
-      .catch(err => console.error('PWA Activation Failed: ', err));
-  });
-}
-
 export default function App(): JSX.Element { 
   return (
     <QueryClientProvider client={queryClient}>
