@@ -1,0 +1,12 @@
+{
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "artifacts/rakt-kavach/dist",
+  "env": {
+    "NODE_OPTIONS": "--max-old-space-size=3072"
+  },
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  }
+}
