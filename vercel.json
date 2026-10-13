@@ -1,7 +1,6 @@
 {
   "version": 2,
-  "cleanUrls": true,
-  "framework": "vite",
-  "buildCommand": "cd  && pnpm install --no-frozen-lockfile && npx vite build --outDir dist",
-  "outputDirectory": "/dist"
+  "installCommand": "pnpm install --no-frozen-lockfile",
+  "buildCommand": "if [ -d \"rakt-kavach-dashboard\" ]; then cd rakt-kavach-dashboard && npx next build; else npx next build; fi",
+  "outputDirectory": "rakt-kavach-dashboard/.next"
 }
