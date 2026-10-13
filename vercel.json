@@ -1,6 +1,6 @@
 {
   "version": 2,
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "buildCommand": "if [ -d \"rakt-kavach-dashboard\" ]; then cd rakt-kavach-dashboard && npx next build; else npx next build; fi",
-  "outputDirectory": "rakt-kavach-dashboard/.next"
+  "buildCommand": "npx next build",
+  "outputDirectory": ".next"
 }
