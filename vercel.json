@@ -2,6 +2,6 @@
   "version": 2,
   "cleanUrls": true,
   "framework": "vite",
-  "buildCommand": "cd artifacts/rakt-kavach && pnpm install --no-frozen-lockfile && pnpm run build",
-  "outputDirectory": "artifacts/rakt-kavach/dist"
+  "buildCommand": "cd  && pnpm install --no-frozen-lockfile && npx vite build --outDir dist",
+  "outputDirectory": "/dist"
 }
